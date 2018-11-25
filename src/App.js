@@ -13,28 +13,40 @@ function Stitch(props) {
 
 // a knitted patch
 class Patch extends Component {
-  state = {stitchWidth: 2};
+  state = { stitchWidth: 2 };
   constructor(props) {
     super(props);
     this.state = {
-      stitchWidth: 6,
-      stitches: ['#0000FF', '#0000FF', '#0000FF', '#0000FF', '#0000FF', '#0000FF', '#0000FF', '#0000FF', '#0000FF'],
-      skane: ['#F00FFF', '#FFF00F', '#F00F00', '#00FFF0', '#FF000F', '#0FF0F0', '#000FFF', '#0F000F', '#F0F0FF']
+      backieForthie: false,
+      stitchWidth: 2,
+      skane: ['#F00FFF', '#F00FFF', '#F00FFF', '#F00FFF', '#FFF00F', '#FFF00F', '#FFF00F', ' hsl(120,30%,30%)']
+      //      skane: ['#F00FFF', '#FFF00F', '#F00F00', '#00FFF0', '#FF000F', '#0FF0F0', '#000FFF', '#0F000F', '#F0F0FF']
     };
-    this.resizePatch = this.resizePatch.bind(this); // fix for wrong this
+    this.resizePatch = this.resizePatch.bind(this); // fix the access of the wrong 'this'
+    this.updateBackForth = this.updateBackForth.bind(this);
+  }
+
+  getIndex(rowSize, row, column) {
+    return rowSize * row + column;
   }
 
   getColor(i) {
-    console.log('getColor for i:', i);
-    return (i) ? '#FF0000' : '#00FF00';
+    // console.log('getColor for i:', i);
+    const sl = this.state.skane.length;
+    return this.state.skane[i % sl];
   }
 
-  renderStitchRow(i) {
-    const dynamic_stitches = [];
+  renderStitchRow(row) {
+    let dynamic_stitches = [];
     let sw = this.state.stitchWidth;
+    let i = row * sw;
     while (sw > 0) {
-      dynamic_stitches.push(<Stitch key={sw} color={this.state.stitches[i]} />);
+      dynamic_stitches.push(<Stitch column={sw} color={this.getColor(i)} />);
+      i += 1;
       sw -= 1;
+    }
+    if (this.state.backieForthie && (row % 2) === 1) {
+      dynamic_stitches = dynamic_stitches.reverse();
     }
     return (
       <div className="patch-row">
@@ -44,23 +56,28 @@ class Patch extends Component {
   }
 
   resizePatch(newSize) {
-    console.log(newSize);
-    this.setState({stitchWidth: newSize});
+    // console.log(newSize);
+    this.setState({ stitchWidth: newSize });
+  }
+
+  updateBackForth(checked) {
+    // console.log(checked);
+    this.setState({ backieForthie: checked });
   }
 
   render() {
-    // let patch = [];
-    // const skane_repeat_len = this.state.skane.length;
-    // this.state.skane.map((s) => {
-    //   patch.push();    
     return (
-      <div style={{ Width: '800px', Height: '500px', backgroundColor: '#EEEEEE' }}>
-        <div className="container-drag">
+      <div >
           {this.renderStitchRow(0)}
           {this.renderStitchRow(1)}
           {this.renderStitchRow(2)}
-        </div>
-        <Resizer startX={50} label="slide this" onClick={this.resizePatch} />
+          {this.renderStitchRow(3)}
+          {this.renderStitchRow(4)}
+          {this.renderStitchRow(5)}
+          {this.renderStitchRow(6)}
+          {this.renderStitchRow(7)}
+        <Resizer startX={20} label={'<-- ' + this.state.stitchWidth + ' stitches to cast on -->'} onClick={this.resizePatch} />
+        <CheckBox label="backie forthie" uniqueId="bfcb" onChange={this.updateBackForth} />
       </div>
     );
   }
@@ -68,22 +85,23 @@ class Patch extends Component {
 
 class Resizer extends Component {
   state = {};
-  offset = 30;
+  offset = 60;
   constructor(props) {
     super(props);
     this.state = { used: false, startX: props.startX, drag: false };
   }
   start(event) {
-    this.setState({ used: true, startX: event.clientX - this.offset, drag: true });
+    this.setState({ used: true, startX: Math.max(0, event.clientX - this.offset), drag: true });
   }
   drag(event) {
     if (this.state.drag) {
-      this.setState({ startX: event.clientX - this.offset });
+      this.setState({ startX: Math.max(0, event.clientX - this.offset) });
+      this.props.onClick(Math.floor(this.state.startX / 8) + 2);
     }
   }
   end(event) {
     this.setState({ drag: false });
-    this.props.onClick(Math.floor(this.state.startX / 20)+2);
+    this.props.onClick(Math.floor(this.state.startX / 8) + 2);
   }
   getXPos() {
     if (this.state.used) { return this.state.startX; }
@@ -91,7 +109,7 @@ class Resizer extends Component {
   }
   render() {
     return (
-      <div style={{ position: "absolute", left: this.getXPos() }}
+      <div className="knitting-slider" style={{ position: "absolute", left: this.getXPos() }}
         onMouseDown={(e) => this.start(e)}
         onMouseMove={(e) => this.drag(e)}
         onMouseUp={(e) => this.end(e)}
@@ -101,6 +119,21 @@ class Resizer extends Component {
       </div>);
   }
 }
+
+
+class CheckBox extends Component {
+  render() {
+    return (
+      <span>
+        <input id={this.props.uniqueId} type="checkbox"
+          onChange={(e) => this.props.onChange(e.target.checked)}
+        />
+        <label htmlFor={this.props.uniqueId}> {this.props.label} </label>
+      </span>
+    );
+  }
+}
+
 
 class App extends Component {
   render() {
