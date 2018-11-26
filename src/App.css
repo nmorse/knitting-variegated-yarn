@@ -1,4 +1,12 @@
+.header {
+  text-align: center;
+}
 
+
+.knit {
+  padding: 7px;
+  background-color: lightgray;
+}
 
 .knitting-slider {
   margin-top: 20px;
