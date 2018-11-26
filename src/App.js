@@ -19,8 +19,8 @@ class Patch extends Component {
     this.state = {
       backieForthie: false,
       stitchWidth: 2,
-      skane: ['#F00FFF', '#F00FFF', '#F00FFF', '#F00FFF', '#FFF00F', '#FFF00F', '#FFF00F', ' hsl(120,100%,30%)']
-      //      skane: ['#F00FFF', '#FFF00F', '#F00F00', '#00FFF0', '#FF000F', '#0FF0F0', '#000FFF', '#0F000F', '#F0F0FF']
+      skein: ['#F00FFF', '#F00FFF', '#F00FFF', '#F00FFF', '#FFF00F', '#FFF00F', '#FFF00F', ' hsl(120,100%,30%)', '#FFF00F', '#FFF00F', '#FFF00F', '#F00FFF', '#F00FFF', '#F00FFF']
+      //      skein: ['#F00FFF', '#FFF00F', '#F00F00', '#00FFF0', '#FF000F', '#0FF0F0', '#000FFF', '#0F000F', '#F0F0FF']
     };
     this.resizePatch = this.resizePatch.bind(this); // fix the access of the wrong 'this'
     this.updateBackForth = this.updateBackForth.bind(this);
@@ -32,15 +32,16 @@ class Patch extends Component {
 
   getColor(i) {
     // console.log('getColor for i:', i);
-    const sl = this.state.skane.length;
-    return this.state.skane[i % sl];
+    const sl = this.state.skein.length;
+    return this.state.skein[i % sl];
   }
 
   renderStitchRow(row) {
     let dynamic_stitches = [];
     const sw = this.state.stitchWidth;
     const start_index = row * sw;
-    for (let stitch_index = start_index; stitch_index < start_index + sw; stitch_index++) {
+    const end_index = start_index + sw;
+    for (let stitch_index = start_index; stitch_index < end_index; stitch_index++) {
       dynamic_stitches.push(<Stitch key={stitch_index} color={this.getColor(stitch_index)} />);
     }
     if (this.state.backieForthie && (row % 2) === 1) {
